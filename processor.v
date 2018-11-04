@@ -2,7 +2,7 @@
 
 /*
  * Module: processor
- * Description: The top module of this lab 
+ * Description: The top module of this lab tests
  */
 module processor (
 	input CLK,
