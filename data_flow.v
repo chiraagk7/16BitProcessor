@@ -98,7 +98,7 @@ endmodule
 module instruction_decode (
 	input [15:0] instruction,
 	
-	output     [2:0] alu_func,
+	output [2:0] alu_func,
 	
 	output [2:0] destination_reg,
 	output [2:0] source_reg1,
@@ -131,7 +131,70 @@ module instruction_decode (
 	output rst_cmd
 );
 
-// STEP 1 - decode instruction
+always@(*) begin
+	case(instruction[15:12])
+		ARITH_2OP: begin
+			{destination_reg, source_reg1, source_reg2, alu_func} = instruction[11:0];
+			arith_2op = 1'b1;
+		end
+		ARITH_1OP: begin
+			{destination_reg, source_reg1} = instruction[11:6];
+			alu_func = instruction[2:0];
+			arith_1op = 1'b1;
+		end
+		MOVI: begin
+			{destination_reg, immediate[7:0]} = {instruction[11:9], instruction[7:0]};
+			{movi_lower, movi_higher} = {~instruction[8], instruction[8]};
+		end
+		ADDI: begin
+			{destination_reg, source_reg1, immediate[5:0]} = instruction[11:0];
+			addi = 1'b1;
+		end
+		SUBI: begin
+			{destination_reg, source_reg1, immediate[5:0]} = instruction[11:0];
+			subi = 1'b1;
+		end
+		LOAD: begin
+			{destination_reg, source_reg1, immediate[5:0]} = instruction[11:0];
+			load = 1'b1;
+		end
+		STORE: begin
+			{destination_reg, source_reg1, immediate[5:0]} = instruction[11:0];
+			store = 1'b1;
+		end
+		BEQ: begin
+			{source_reg1, source_reg2, immediate[5:0]} = instruction[11:0];
+			branch_eq = 1'b1;
+		end
+		BGE: begin
+			{source_reg1, source_reg2, immediate[5:0]} = instruction[11:0];
+			branch_ge = 1'b1;
+		end
+		BLE: begin
+			{source_reg1, source_reg2, immediate[5:0]} = instruction[11:0];
+			branch_le = 1'b1;
+		end
+		BC: begin
+			immediate[5:0] = instruction[5:0];
+			branch_carry = 1'b1;
+		end
+		J: begin
+			immediate = instruction[11:0];
+			jump = 1'b1;
+		end
+		// JL: begin
+		// 	// immediate = instruction[11:0];
+		// end
+		// INT: begin
+		// end
+		CONTROL: begin
+			stc_cmd = (STC == instruction[11:0]);
+			stb_cmd = (STB == instruction[11:0]);
+			halt_cmd = (HALT == instruction[11:0]);
+			rst_cmd = (RESET == instruction[11:0]);
+		end
+	endcase
+end
 		
 endmodule
 
