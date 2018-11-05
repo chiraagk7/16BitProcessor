@@ -130,71 +130,33 @@ module instruction_decode (
 	output halt_cmd,
 	output rst_cmd
 );
+	wire op_code;
 
-always@(*) begin
-	case(instruction[15:12])
-		ARITH_2OP: begin
-			{destination_reg, source_reg1, source_reg2, alu_func} = instruction[11:0];
-			arith_2op = 1'b1;
-		end
-		ARITH_1OP: begin
-			{destination_reg, source_reg1} = instruction[11:6];
-			alu_func = instruction[2:0];
-			arith_1op = 1'b1;
-		end
-		MOVI: begin
-			{destination_reg, immediate[7:0]} = {instruction[11:9], instruction[7:0]};
-			{movi_lower, movi_higher} = {~instruction[8], instruction[8]};
-		end
-		ADDI: begin
-			{destination_reg, source_reg1, immediate[5:0]} = instruction[11:0];
-			addi = 1'b1;
-		end
-		SUBI: begin
-			{destination_reg, source_reg1, immediate[5:0]} = instruction[11:0];
-			subi = 1'b1;
-		end
-		LOAD: begin
-			{destination_reg, source_reg1, immediate[5:0]} = instruction[11:0];
-			load = 1'b1;
-		end
-		STORE: begin
-			{destination_reg, source_reg1, immediate[5:0]} = instruction[11:0];
-			store = 1'b1;
-		end
-		BEQ: begin
-			{source_reg1, source_reg2, immediate[5:0]} = instruction[11:0];
-			branch_eq = 1'b1;
-		end
-		BGE: begin
-			{source_reg1, source_reg2, immediate[5:0]} = instruction[11:0];
-			branch_ge = 1'b1;
-		end
-		BLE: begin
-			{source_reg1, source_reg2, immediate[5:0]} = instruction[11:0];
-			branch_le = 1'b1;
-		end
-		BC: begin
-			immediate[5:0] = instruction[5:0];
-			branch_carry = 1'b1;
-		end
-		J: begin
-			immediate = instruction[11:0];
-			jump = 1'b1;
-		end
-		// JL: begin
-		// 	// immediate = instruction[11:0];
-		// end
-		// INT: begin
-		// end
-		CONTROL: begin
-			stc_cmd = (STC == instruction[11:0]);
-			stb_cmd = (STB == instruction[11:0]);
-			halt_cmd = (HALT == instruction[11:0]);
-			rst_cmd = (RESET == instruction[11:0]);
-		end
-	endcase
-end
+	assign op_code[3:0] = instruction[15:12];
+
+	assign alu_func = instruction[2:0];
+	assign destination_reg = instruction[11:9];
+	assign source_reg1 = ~op_code[3] ? instruction[8:6] : instruction[11:9];
+	assign source_reg2 = ~op_code[3] ? instruction[5:3] : instruction[8:6];
+	assign immediate = instruction[11:0];
+
+	assign arith_1op = (op_code == ARITH_1OP);
+	assign arith_2op = (op_code == ARITH_2OP);
+	assign movi_lower = (op_code == MOVI && ~instruction[8]);
+	assign movi_higher = (op_code == MOVI && instruction[8]);
+	assign addi = (op_code == ADDI);
+	assign subi = (op_code == SUBI);
+	assign load = (op_code == LOAD);
+	assign store = (op_code == STORE);
+	assign branch_eq = (op_code == BEQ);
+	assign branch_ge = (op_code == BGE);
+	assign branch_le = (op_code == BLE);
+	assign branch_carry = (op_code == BC);
+	assign jump = (op_code == J);
+	assign stc_cmd = (op_code == STC);
+	assign stb_cmd = (op_code == STB);
+	assign halt_cmd = (op_code == HALT);
+	assign rst_cmd = (op_code == RESET);
 		
 endmodule
 
