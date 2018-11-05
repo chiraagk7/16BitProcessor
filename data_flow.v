@@ -104,7 +104,7 @@ module instruction_decode (
 	output [2:0] source_reg1,
 	output [2:0] source_reg2,
 	
-	output  [11:0] immediate,
+	output [11:0] immediate,
 	
 	output arith_2op,
 	output arith_1op, 
@@ -130,9 +130,9 @@ module instruction_decode (
 	output halt_cmd,
 	output rst_cmd
 );
-	wire op_code;
+	wire [3:0] op_code;
 
-	assign op_code[3:0] = instruction[15:12];
+	assign op_code = instruction[15:12];
 
 	assign alu_func = instruction[2:0];
 	assign destination_reg = instruction[11:9];
@@ -140,23 +140,23 @@ module instruction_decode (
 	assign source_reg2 = ~op_code[3] ? instruction[5:3] : instruction[8:6];
 	assign immediate = instruction[11:0];
 
-	assign arith_1op = (op_code == ARITH_1OP);
-	assign arith_2op = (op_code == ARITH_2OP);
-	assign movi_lower = (op_code == MOVI && ~instruction[8]);
-	assign movi_higher = (op_code == MOVI && instruction[8]);
-	assign addi = (op_code == ADDI);
-	assign subi = (op_code == SUBI);
-	assign load = (op_code == LOAD);
-	assign store = (op_code == STORE);
-	assign branch_eq = (op_code == BEQ);
-	assign branch_ge = (op_code == BGE);
-	assign branch_le = (op_code == BLE);
-	assign branch_carry = (op_code == BC);
-	assign jump = (op_code == J);
-	assign stc_cmd = (op_code == STC);
-	assign stb_cmd = (op_code == STB);
-	assign halt_cmd = (op_code == HALT);
-	assign rst_cmd = (op_code == RESET);
+	assign arith_1op = (op_code == `ARITH_1OP);
+	assign arith_2op = (op_code == `ARITH_2OP);
+	assign movi_lower = (op_code == `MOVI && ~instruction[8]);
+	assign movi_higher = (op_code == `MOVI && instruction[8]);
+	assign addi = (op_code == `ADDI);
+	assign subi = (op_code == `SUBI);
+	assign load = (op_code == `LOAD);
+	assign store = (op_code == `STOR);
+	assign branch_eq = (op_code == `BEQ);
+	assign branch_ge = (op_code == `BGE);
+	assign branch_le = (op_code == `BLE);
+	assign branch_carry = (op_code == `BC);
+	assign jump = (op_code == `J);
+	assign stc_cmd = (op_code == `STC);
+	assign stb_cmd = (op_code == `STB);
+	assign halt_cmd = (op_code == `HALT);
+	assign rst_cmd = (op_code == `RESET);
 		
 endmodule
 
@@ -199,7 +199,7 @@ module reg_file (
 	// TEMPORARY - REMOVE WHEN YOU BEGIN STEP 2
 	assign reg1_data = 16'h9000;
 	assign reg2_data = 16'h9000;
-	assign regD_data = 16'h9000;
+	assign regD_data = 16'hCAFE;
 	
 endmodule
 
