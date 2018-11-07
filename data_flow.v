@@ -153,10 +153,10 @@ module instruction_decode (
 	assign branch_le = (op_code == `BLE);
 	assign branch_carry = (op_code == `BC);
 	assign jump = (op_code == `J);
-	assign stc_cmd = (op_code == `STC);
-	assign stb_cmd = (op_code == `STB);
-	assign halt_cmd = (op_code == `HALT);
-	assign rst_cmd = (op_code == `RESET);
+	assign stc_cmd = (op_code == `CONTROL && immediate == `STC);
+	assign stb_cmd = (op_code == `CONTROL && immediate == `STB);
+	assign halt_cmd = (op_code == `CONTROL && immediate == `HALT);
+	assign rst_cmd = (op_code == `CONTROL && immediate == `RESET);
 		
 endmodule
 
