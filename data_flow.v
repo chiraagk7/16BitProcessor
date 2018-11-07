@@ -194,12 +194,22 @@ module reg_file (
 		
 	// STEP 2 - Registers
 	reg [15:0] registers [7:0];
-	
-	
-	// TEMPORARY - REMOVE WHEN YOU BEGIN STEP 2
-	assign reg1_data = 16'h9000;
-	assign reg2_data = 16'h9000;
-	assign regD_data = 16'hCAFE;
+
+	assign reg1_data = registers[source_reg1];
+	assign reg2_data = registers[source_reg2];
+	assign regD_data = registers[destination_reg];
+
+	always@(posedge clk_en, reset) begin
+		if (wr_destination_reg) begin
+			registers[destination_reg] = dest_result_data;
+			if (movi_lower) begin
+				registers[destination_reg][7:0] = immediate
+			end
+			if (movi_higher) begin
+				registers[destination_reg][15:8] = immediate
+			end
+		end
+	end
 	
 endmodule
 
