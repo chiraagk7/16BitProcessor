@@ -195,28 +195,31 @@ module reg_file (
 	// STEP 2 - Registers
 	reg [15:0] registers [7:0];
 
-	assign reg1_data = registers[source_reg1];
-	assign reg2_data = registers[source_reg2];
-	assign regD_data = registers[destination_reg];
-
 	integer i;
 
-	always@(posedge clk_en, posedge reset) begin
+	always@(posedge clk) begin
 	    if (reset) begin
-			for (i = 0; i < 8; i++) begin
+			for (i = 0; i < 8; i = i+1) begin
 				registers[i] = 16'b0;
 			end
 		end
-		if (wr_destination_reg) begin
-			registers[destination_reg] = dest_result_data;
-			if (movi_lower) begin
-				registers[destination_reg][7:0] = immediate
+		if (wr_destination_reg && clk_en) begin
+		  	if (movi_lower) begin
+                registers[destination_reg][7:0] = immediate;
+            end
+            else if (movi_higher) begin
+                registers[destination_reg][15:8] = immediate;
+            end
+            else begin
+			    registers[destination_reg] = dest_result_data;
 			end
-			if (movi_higher) begin
-				registers[destination_reg][15:8] = immediate
-			end
+
 		end
 	end
+	
+	assign reg1_data = registers[source_reg1];
+    assign reg2_data = registers[source_reg2];
+    assign regD_data = registers[destination_reg];
 	
 endmodule
 
