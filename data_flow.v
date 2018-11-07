@@ -199,7 +199,14 @@ module reg_file (
 	assign reg2_data = registers[source_reg2];
 	assign regD_data = registers[destination_reg];
 
-	always@(posedge clk_en, reset) begin
+	integer i;
+
+	always@(posedge clk_en, posedge reset) begin
+	    if (reset) begin
+			for (i = 0; i < 8; i++) begin
+				registers[i] = 16'b0;
+			end
+		end
 		if (wr_destination_reg) begin
 			registers[destination_reg] = dest_result_data;
 			if (movi_lower) begin
@@ -259,6 +266,8 @@ module alu (
 	reg [16:0] full_result; 
 
 	// STEP 3 - ALU
+
+	
 	
 	// TEMPORARY - remove when you begin step 3
 	assign alu_result = 16'h9000;
