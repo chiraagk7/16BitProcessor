@@ -131,19 +131,21 @@ module instruction_decode (
 	output rst_cmd
 );
 	wire [3:0] op_code;
-
+	wire branchinstr;
+    assign branchinstr = branch_eq | branch_ge | branch_le | branch_carry;
 	assign op_code = instruction[15:12];
 
 	assign alu_func = instruction[2:0];
 	assign destination_reg = instruction[11:9];
-	assign source_reg1 = ~op_code[3] ? instruction[8:6] : instruction[11:9];
-	assign source_reg2 = ~op_code[3] ? instruction[5:3] : instruction[8:6];
+	assign source_reg1 = branchinstr ? instruction[11:9] : instruction[8:6];
+	assign source_reg2 = branchinstr ? instruction[8:6] : instruction[5:3];
+//	assign source_reg2 = ~op_code[3] ? instruction[5:3] : instruction[8:6];
 	assign immediate = instruction[11:0];
 
 	assign arith_1op = (op_code == `ARITH_1OP);
 	assign arith_2op = (op_code == `ARITH_2OP);
-	assign movi_lower = (op_code == `MOVI && ~instruction[8]);
-	assign movi_higher = (op_code == `MOVI && instruction[8]);
+	assign movi_lower = ((op_code == `MOVI) && ~instruction[8]);
+	assign movi_higher = ((op_code == `MOVI) && instruction[8]);
 	assign addi = (op_code == `ADDI);
 	assign subi = (op_code == `SUBI);
 	assign load = (op_code == `LOAD);
@@ -200,20 +202,22 @@ module reg_file (
 	always@(posedge clk) begin
 	    if (reset) begin
 			for (i = 0; i < 8; i = i+1) begin
-				registers[i] = 16'b0;
+				registers[i] <= 16'b0;
 			end
 		end
-		if (wr_destination_reg && clk_en) begin
-		  	if (movi_lower) begin
-                registers[destination_reg][7:0] = immediate;
+		else begin
+            if (wr_destination_reg && clk_en) begin
+                if (movi_lower) begin
+                    registers[destination_reg][7:0] <= immediate;
+                end
+                else if (movi_higher) begin
+                    registers[destination_reg][15:8] <= immediate;
+                end
+                else begin
+                    registers[destination_reg] <= dest_result_data;
+                end
+    
             end
-            else if (movi_higher) begin
-                registers[destination_reg][15:8] = immediate;
-            end
-            else begin
-			    registers[destination_reg] = dest_result_data;
-			end
-
 		end
 	end
 	
@@ -270,50 +274,52 @@ module alu (
 
 	// STEP 3 - ALU
 
-	always@(posedge clk) begin
-		if (reset) begin
-			alu_carry_bit = 1'b0;
-			alu_borrow_bit = 1'b0;
-		end
-		else if (clk_en) begin
-			if (stc_cmd)
-				alu_carry_bit <= 1'b1;
-			if (stb_cmd)
-				alu_borrow_bit <= 1'b1;
-		end
-	end
-
 	always@(*) begin
+	   full_result = 17'b0;
 		if (arith_2op) begin
 			case (alu_func)
-				000: full_result = reg1_data + reg2_data;
-				001: full_result = reg1_data + reg2_data + alu_carry_bit;
-				010: full_result = reg1_data - reg2_data;
-				011: full_result = reg1_data - reg2_data - alu_borrow_bit;
-				100: full_result = reg1_data & reg2_data;
-				101: full_result = reg1_data | reg2_data;
-				110: full_result = reg1_data ^ reg2_data;
-				111: full_result = reg1_data ~^ reg2_data;
+				`ADD: full_result = reg1_data + reg2_data;
+				`ADDC: full_result = reg1_data + reg2_data + alu_carry_bit;
+				`SUB: full_result = reg1_data - reg2_data;
+				`SUBB: full_result = reg1_data - reg2_data - alu_borrow_bit;
+				`AND: full_result = reg1_data & reg2_data;
+				`OR: full_result = reg1_data | reg2_data;
+				`XOR: full_result = reg1_data ^ reg2_data;
+				`XNOR: full_result = reg1_data ~^ reg2_data;
 			endcase
-			
+		end	
 		else if (arith_1op) begin
 			case (alu_func)
-				000: full_result = ~reg1_data;
-				001: full_result = reg1_data << 1;
-				010: full_result = reg1_data >> 1;
-				011: full_result = reg1_data;
+				`NOT: full_result = ~reg1_data;
+				`SHIFTL: full_result = reg1_data << 1;
+				`SHIFTR: full_result = reg1_data >> 1;
+				`CP: full_result = reg1_data;
 			endcase
 		end
-		else if (addi or load_or_store)
+		else  if (addi | load_or_store)
 			full_result = reg1_data + immediate;
-		else if (subi)
+		 if (subi)
 			full_result = reg1_data - immediate;
-
-		if (addi || ((alu_func[2:1] == 2'b00) && arith_2op))
-			alu_carry_bit = full_result[16];
-		if (subi || (alu_func[2:1] == 2'b01 && arith_2op))
-			alu_borrow_bit = full_result[16];
 	end
+	
+	always@(posedge clk) begin
+            if (reset) begin
+                alu_carry_bit <= 1'b0;
+                alu_borrow_bit <= 1'b0;
+            end
+            else begin
+                if (clk_en) begin
+                    if (stc_cmd)
+                        alu_carry_bit <= 1'b1;
+                    else if (addi | ( (alu_func == `ADDC | alu_func == `ADD) && arith_2op))
+                        alu_carry_bit <= full_result[16];
+                    if (stb_cmd)
+                        alu_borrow_bit <= 1'b1;
+                    else if (subi || ((alu_func[2:1] == 2'b01) && arith_2op))
+                        alu_borrow_bit <= full_result[16];
+                end
+            end
+        end
 	
 	assign alu_result = full_result[15:0];
 	
