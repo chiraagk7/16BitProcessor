@@ -258,7 +258,7 @@ module alu (
 	output reg        alu_carry_bit,
 	output     [15:0] alu_result
 );
-	// Carry and Borrow bots are used for math that exceeds 16-bits, to carry or borrow a bit from one operation to the next.
+	// Carry and Borrow bits are used for math that exceeds 16-bits, to carry or borrow a bit from one operation to the next.
 	// ONLY use the carry/borrow bit for ADDC or SUBB, respectively
 	// SET the carry/borrow bit for any ADD/ADDI/ADDC/STC or SUB/SUBI/SUBB/STB instruction
 	
@@ -270,15 +270,17 @@ module alu (
 
 	// STEP 3 - ALU
 
-	always@(posedge clk_en, posedge reset) begin
+	always@(posedge clk) begin
 		if (reset) begin
 			alu_carry_bit = 1'b0;
 			alu_borrow_bit = 1'b0;
 		end
-		else if (stc_cmd)
-			alu_carry_bit <= 1'b1;
-		else if (stb_cmd)
-			alu_borrow_bit <= 1'b1;
+		else if (clk_en) begin
+			if (stc_cmd)
+				alu_carry_bit <= 1'b1;
+			if (stb_cmd)
+				alu_borrow_bit <= 1'b1;
+		end
 	end
 
 	always@(*) begin
@@ -293,7 +295,7 @@ module alu (
 				110: full_result = reg1_data ^ reg2_data;
 				111: full_result = reg1_data ~^ reg2_data;
 			endcase
-			{carry}
+			
 		else if (arith_1op) begin
 			case (alu_func)
 				000: full_result = ~reg1_data;
@@ -306,10 +308,14 @@ module alu (
 			full_result = reg1_data + immediate;
 		else if (subi)
 			full_result = reg1_data - immediate;
+
+		if (addi || ((alu_func[2:1] == 2'b00) && arith_2op))
+			alu_carry_bit = full_result[16];
+		if (subi || (alu_func[2:1] == 2'b01 && arith_2op))
+			alu_borrow_bit = full_result[16];
 	end
 	
-	// TEMPORARY - remove when you begin step 3
-	assign alu_result = 16'h9000;
+	assign alu_result = full_result[15:0];
 	
 endmodule
 
