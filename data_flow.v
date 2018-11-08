@@ -270,7 +270,43 @@ module alu (
 
 	// STEP 3 - ALU
 
-	
+	always@(posedge clk_en, posedge reset) begin
+		if (reset) begin
+			alu_carry_bit = 1'b0;
+			alu_borrow_bit = 1'b0;
+		end
+		else if (stc_cmd)
+			alu_carry_bit <= 1'b1;
+		else if (stb_cmd)
+			alu_borrow_bit <= 1'b1;
+	end
+
+	always@(*) begin
+		if (arith_2op) begin
+			case (alu_func)
+				000: full_result = reg1_data + reg2_data;
+				001: full_result = reg1_data + reg2_data + alu_carry_bit;
+				010: full_result = reg1_data - reg2_data;
+				011: full_result = reg1_data - reg2_data - alu_borrow_bit;
+				100: full_result = reg1_data & reg2_data;
+				101: full_result = reg1_data | reg2_data;
+				110: full_result = reg1_data ^ reg2_data;
+				111: full_result = reg1_data ~^ reg2_data;
+			endcase
+			{carry}
+		else if (arith_1op) begin
+			case (alu_func)
+				000: full_result = ~reg1_data;
+				001: full_result = reg1_data << 1;
+				010: full_result = reg1_data >> 1;
+				011: full_result = reg1_data;
+			endcase
+		end
+		else if (addi or load_or_store)
+			full_result = reg1_data + immediate;
+		else if (subi)
+			full_result = reg1_data - immediate;
+	end
 	
 	// TEMPORARY - remove when you begin step 3
 	assign alu_result = 16'h9000;
