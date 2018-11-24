@@ -348,4 +348,8 @@ module branch_comparator (
 	 branch_taken = 1'b0;
 	
 	// STEP 4: branch logic
+	always@(*) begin
+		branch_taken = (branch_eq && (reg1_data == reg2_data)) || (branch_ge && (reg1_data >= reg2_data)) 
+			|| (branch_le && (reg1_data <= reg2_data)) || (branch_carry && alu_carry_bit);
+	end
 endmodule
