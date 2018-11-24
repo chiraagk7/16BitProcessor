@@ -68,14 +68,20 @@ module program_counter (
 	reg [15:0] pc_next;
 		
 	// STEP 4: Sign extend branch_immediate and jump_immediate
-	
+	assign signext_branch_imm = branch_immediate[5] ? {10'b1111111111, branch_immediate} : {10'b0, branch_immediate};
+	assign signext_jump_imm = jump_immediate[11] ? {4'b1111, jump_immediate} : {4'b0, jump_immediate};
 		
 	initial 
 		pc <= 16'h0;
 		
 	always @(*) begin
 		// STEP 4 : Logic for pc_next
-		pc_next = pc + 2;
+		if (branch_taken)
+			pc_next = pc + signext_branch_imm + 2;
+		else if (jump_taken)
+			pc_next = pc + signext_jump_imm + 2;
+		else
+			pc_next = pc + 2;
 	end
 
 	always @(posedge clk) begin
