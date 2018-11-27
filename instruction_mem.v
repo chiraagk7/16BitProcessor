@@ -15,12 +15,13 @@ module instruction_mem(
 		case(PC)
 			// TEST PROGRAM FOR STEPS 1 &2
 			// Corresponds to test1.asm
+			/*
 	0: instruction = 16'b0000000000000000;   //NOP
          2: instruction = 16'b0011000110010000;    // MOVIH $0, #0x90
          4: instruction = 16'b0011001110111110;    // MOVIH $1, 0xBE
          6: instruction = 16'b0011001011101111;   // MOVIL $1, #0xEF
          8: instruction = 16'b0111001000000000;  // ST $1, $0, #0
-			
+			*/
 			// TEST PROGRAM FOR STEP 3
 			// Corresponds to test2.asm
 			/*
@@ -53,31 +54,48 @@ module instruction_mem(
 			
 			// FINAL TEST PROGRAM
 			// Corresponds to test3.asm
-			/*
+			
+//         0: instruction = 16'b0011000110000000;
+//         2: instruction = 16'b0011100000000001;
+//         4: instruction = 16'b0001010011100000;
+//         6: instruction = 16'b1011000000011010;
+//         8: instruction = 16'b0010100011000011;
+//         10: instruction = 16'b0010011010000011;
+//         12: instruction = 16'b0011101110010000;
+//         14: instruction = 16'b0111010101000000;
+//         16: instruction = 16'b0011101111110000;
+//         18: instruction = 16'b0110110101000000;
+//         20: instruction = 16'b0100110110000001;
+//         22: instruction = 16'b0110001000000000;
+//         24: instruction = 16'b0111001000000000;
+//         26: instruction = 16'b0110111101000000;
+//         28: instruction = 16'b1010111110111000;
+//         30: instruction = 16'b1001111110100100;
+//         32: instruction = 16'b0000000000000000;
+//         34: instruction = 16'b0011101110010000;
+//         36: instruction = 16'b0011101000000010;
+//         38: instruction = 16'b0011000000000001;
+//         40: instruction = 16'b0111000101000000;
+        
+        // Step 5 Test - 4 Bit Multiplier
+        
          0: instruction = 16'b0011000110000000;
-         2: instruction = 16'b0011100000000001;
-         4: instruction = 16'b0001010011100000;
-         6: instruction = 16'b1011000000011010;
-         8: instruction = 16'b0010100011000011;
-         10: instruction = 16'b0010011010000011;
-         12: instruction = 16'b0011101110010000;
-         14: instruction = 16'b0111010101000000;
-         16: instruction = 16'b0011101111110000;
-         18: instruction = 16'b0110110101000000;
-         20: instruction = 16'b0100110110000001;
-         22: instruction = 16'b0110001000000000;
-         24: instruction = 16'b0111001000000000;
-         26: instruction = 16'b0110111101000000;
-         28: instruction = 16'b1010111110111000;
-         30: instruction = 16'b1001111110100100;
-         32: instruction = 16'b0000000000000000;
-         34: instruction = 16'b0011101110010000;
-         36: instruction = 16'b0011101000000010;
-         38: instruction = 16'b0011000000000001;
-         40: instruction = 16'b0111000101000000;
-
-*/
-
+        2: instruction = 16'b0110001000000000;
+        4: instruction = 16'b0011100000001111;
+        6: instruction = 16'b0001010001100100;
+        8: instruction = 16'b0010011001000010;
+        10: instruction = 16'b0010011011000010;
+        12: instruction = 16'b0010011011000010;
+        14: instruction = 16'b0010011011000010;
+        16: instruction = 16'b0001011011100100;
+        18: instruction = 16'b0001101010101000;
+        20: instruction = 16'b0100110110000001;
+        22: instruction = 16'b1010110011111010;
+        24: instruction = 16'b0001101101010010;
+        26: instruction = 16'b0011111110010000;
+        28: instruction = 16'b0111101111000000;
+        30: instruction = 16'b1000010010111110;
+        
 			default: instruction = 16'h0;
 		endcase
 	end
